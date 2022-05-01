@@ -3,7 +3,7 @@ package es.uji.jvilar.barbariangold.controller
 import es.uji.jvilar.barbariangold.model.Direction
 import kotlin.math.abs
 
-internal class GestureDetector {
+class GestureDetector {
     enum class Gestures {
         SWIPE, CLICK, NONE
     }

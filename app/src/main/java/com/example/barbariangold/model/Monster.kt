@@ -5,6 +5,6 @@ import es.uji.jvilar.barbariangold.model.Direction
 class Monster {
     var x : Float = 0.0f
     var y : Float = 0.0f
-    var direction : Direction? = null
+    var direction : Direction = Direction.STOP
     var alive : Boolean = true
 }

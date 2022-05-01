@@ -15,7 +15,7 @@ enum class Direction(
      */
     val col: Int
 ) {
-    UP(-1, 0), DOWN(1, 0), LEFT(0, -1), RIGHT(0, 1), THIS(0,0);
+    UP(-1, 0), DOWN(1, 0), LEFT(0, -1), RIGHT(0, 1), STOP(0,0);
 
     fun turnLeft(): Direction =
         when {
