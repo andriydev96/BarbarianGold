@@ -17,6 +17,10 @@ class Position
     var row: Int,
     var col: Int
 ) {
+    var parent : Position? = null // Previous cell to this one
+    var G : Int? = 0 // Distance from starting cell
+    var H : Int? = 0 // Distance from goal cell
+    var F : Int? = 0 // F cost = G + H
     /**
      * A copy constructor.
      * @param position the other position.

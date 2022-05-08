@@ -39,7 +39,7 @@ class GestureDetector {
 
     companion object {
         private const val SWIPE_THRESHOLD = 1 / 8f
-        private const val SWIPE_MARGIN = .8f * SWIPE_THRESHOLD
+        private const val SWIPE_MARGIN = .8f / SWIPE_THRESHOLD
         private const val CLICK_THRESHOLD = SWIPE_THRESHOLD / 10f
     }
 }

@@ -47,6 +47,8 @@ class MainActivity : GameActivity(), SoundPlayer {
     var potionId = 0
     var killId = 0
     var walkId = 0
+    var gameBeatenId = 0
+    var gameOverId = 0
     var walkSoundStreamId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,7 +65,7 @@ class MainActivity : GameActivity(), SoundPlayer {
         this.width = width
         this.height = height
 
-        rescaleGrid()
+        if (cellSize != Math.min(width.toFloat() / horizontalCells, height.toFloat() / verticalCells)) rescaleGrid()
     }
 
     override fun onDrawingRequested(): Bitmap? {
@@ -150,13 +152,12 @@ class MainActivity : GameActivity(), SoundPlayer {
     //Divides the screen into [horizontalCells] x [verticalCells] cells, and scales the assets accordingly.
     fun rescaleGrid(){
         cellSize = Math.min(width.toFloat() / horizontalCells, height.toFloat() / verticalCells)
-        println("CELLSIZE = $cellSize, TOINT = ${cellSize.toInt()}")
         Assets.createAssets(this, (cellSize + (width.toFloat()/height.toFloat())).toInt())
         graphics = Graphics(width, height)
     }
 
     //Draws the game screen and all of its items and entities in real time
-    fun drawGameScreen(gameLevel : GameLevel){
+    private fun drawGameScreen(gameLevel : GameLevel){
         horizontalCells = gameLevel.maze.nCols
         verticalCells = gameLevel.maze.nRows
         if (cellSize != Math.min(width.toFloat() / horizontalCells, height.toFloat() / verticalCells)) {
@@ -300,7 +301,7 @@ class MainActivity : GameActivity(), SoundPlayer {
     }
 
     //Draws the score text
-    fun drawScore(text: String){
+    private fun drawScore(text: String){
         with(graphics){
             setTextColor(Color.YELLOW)
             setTextSize(40)
@@ -310,7 +311,7 @@ class MainActivity : GameActivity(), SoundPlayer {
     }
 
     //Draws the remaining life hearts
-    fun drawLife(princess: Princess){
+    private fun drawLife(princess: Princess){
         with(graphics){
             setTextColor(Color.RED)
             setTextSize(40)
@@ -323,18 +324,20 @@ class MainActivity : GameActivity(), SoundPlayer {
         }
     }
 
-    fun drawPauseScreen(){
+    //Draws the screen that appears at the start of a level or when the player respawns AKA when the game is in pause state
+    private fun drawPauseScreen(){
         with(graphics){
             drawRect(0F, height/2.5F - 25F, width.toFloat()+1F, height/6F + 50F, Color.WHITE)
             drawRect(0F, height/2.5F, width.toFloat()+1F, height/6F, Color.BLACK)
             setTextColor(Color.YELLOW)
-            setTextSize(100)
+            setTextSize(95)
             setTextAlign(Paint.Align.CENTER)
-            drawText(width/2F,height/2F + 20F, "TOUCH ANYWHERE TO START!")
+            drawText(width/2F,height/2F + 20F, "TOUCH OR SWIPE ANYWHERE TO START!")
         }
     }
 
-    fun drawGameOverScreen(){
+    //Draws the screen that appears when the player looses the game AKA when hearts reach zero
+    private fun drawGameOverScreen(){
         with(graphics){
             drawRect(0F, height/2.5F - 25F, width.toFloat()+1F, height/6F + 50F, Color.WHITE)
             drawRect(0F, height/2.5F, width.toFloat()+1F, height/6F, Color.BLACK)
@@ -347,7 +350,8 @@ class MainActivity : GameActivity(), SoundPlayer {
         }
     }
 
-    fun drawNewGamePlusScreen(){
+    //Draws the screen that appears when the player beats the game
+    private fun drawNewGamePlusScreen(){
         with(graphics){
             drawRect(0F, height/4F - 25F, width.toFloat()+1F, height/2F + 50F, Color.WHITE)
             drawRect(0F, height/4F, width.toFloat()+1F, height/2F, Color.BLACK)
@@ -368,6 +372,7 @@ class MainActivity : GameActivity(), SoundPlayer {
         }
     }
 
+    //Builds the SoundPool
     private fun prepareSoundPool(context: Context) {
         val attributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_GAME)
@@ -383,8 +388,11 @@ class MainActivity : GameActivity(), SoundPlayer {
         potionId = soundPool.load(context, R.raw.potion, 0)
         killId = soundPool.load(context, R.raw.kill, 0)
         walkId = soundPool.load(context, R.raw.walk, 0)
+        gameBeatenId = soundPool.load(context, R.raw.game_beaten, 0)
+        gameOverId = soundPool.load(context, R.raw.game_over, 0)
     }
 
+    //Plays a sound given it's ID
     override fun playSound(soundId : Int) {
         soundPool.play(soundId, 0.8f, 0.8f, 0, 0, 1f)
     }

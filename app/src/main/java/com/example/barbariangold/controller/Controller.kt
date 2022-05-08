@@ -2,7 +2,6 @@ package com.example.barbariangold.controller
 
 import com.example.barbariangold.GameLevel
 import com.example.barbariangold.MainActivity
-import com.example.barbariangold.R
 import com.example.barbariangold.model.Model
 import es.uji.jvilar.barbariangold.controller.GestureDetector
 import es.uji.jvilar.barbariangold.model.CellType
@@ -25,10 +24,10 @@ class Controller(private val view: MainActivity, private val model: Model) : IGa
             }
             if (event.type == TouchHandler.TouchType.TOUCH_UP) {
                 if (model.gamePaused) model.gamePaused = false
-                else if (model.gameOver || model.gameCompleted) onGameEnd(gestureDetector)
                 if (gestureDetector.onTouchUp(event.x.toFloat() / view.width, event.y.toFloat() / view.height) == GestureDetector.Gestures.SWIPE) {
-                    changePrincessDirection(gestureDetector)
+                    if (!model.gameCompleted && !model.gameOver) changePrincessDirection(gestureDetector)
                 }
+                if (model.gameOver || model.gameCompleted) onGameEnd(gestureDetector)
             }
         }
         model.update(deltaTime)
@@ -37,7 +36,7 @@ class Controller(private val view: MainActivity, private val model: Model) : IGa
     }
 
     //Configures and starts a given level
-    fun startLevel(gameLevel : GameLevel){
+    private fun startLevel(gameLevel : GameLevel){
         gameLevel.maze.reset()
         model.gamePaused = true
         model.princess.direction = Direction.STOP
@@ -48,6 +47,7 @@ class Controller(private val view: MainActivity, private val model: Model) : IGa
         for (i in model.monsters.indices){
             model.monsters[i].alive = true
             model.monsters[i].direction = Direction.STOP
+            model.monsters[i].targetCell = null
             model.monsters[i].x = gameLevel.maze.enemyOrigins[i].col.toFloat()
             model.monsters[i].y = gameLevel.maze.enemyOrigins[i].row.toFloat()
         }
@@ -57,29 +57,29 @@ class Controller(private val view: MainActivity, private val model: Model) : IGa
     }
 
     //Checks if the conditions to start/end a level are met
-    fun checkGameState(gameLevel : GameLevel){
+    private fun checkGameState(gameLevel : GameLevel){
         if (model.gold >= gameLevel.maze.gold){
             model.princess.powerUp = false
             view.soundPool.stop(view.walkSoundStreamId)
             when (model.level){
                 1 -> {
-                    view.soundPool.play(view.winId, 0.6f, 0.8f, 0, 0, 1f)
+                    view.soundPool.play(view.winId, 0.8f, 0.8f, 0, 0, 1f)
                     startLevel(GameLevel(view.map.level2, model.princess, model.monsters))
                     model.level++ }
                 2 -> {
-                    view.soundPool.play(view.winId, 0.6f, 0.8f, 0, 0, 1f)
+                    view.soundPool.play(view.winId, 0.8f, 0.8f, 0, 0, 1f)
                     startLevel(GameLevel(view.map.level3, model.princess, model.monsters))
                     model.level++ }
                 3 -> {
-                    view.soundPool.play(view.winId, 0.6f, 0.8f, 0, 0, 1f)
+                    view.soundPool.play(view.winId, 0.8f, 0.8f, 0, 0, 1f)
                     startLevel(GameLevel(view.map.level4, model.princess, model.monsters))
                     model.level++ }
                 4 -> {
-                    view.soundPool.play(view.winId, 0.6f, 0.8f, 0, 0, 1f)
+                    view.soundPool.play(view.winId, 0.8f, 0.8f, 0, 0, 1f)
                     startLevel(GameLevel(view.map.level5, model.princess, model.monsters))
                     model.level++ }
                 5 -> {
-                    if (!model.gameCompleted) view.soundPool.play(view.winId, 0.6f, 0.8f, 0, 0, 1f)
+                    if (!model.gameCompleted) view.soundPool.play(view.gameBeatenId, 0.8f, 0.8f, 0, 0, 1f)
                     model.gameCompleted = true
                 }
             }
@@ -87,7 +87,7 @@ class Controller(private val view: MainActivity, private val model: Model) : IGa
     }
 
     //Changes the direction of the Princess to match the direction that user has swept to (if possible, of course!)
-    fun changePrincessDirection(gesture: GestureDetector){
+    private fun changePrincessDirection(gesture: GestureDetector){
         val currentCellX = model.princess.x.roundToInt()
         val currentCellY = model.princess.y.roundToInt()
         if (model.princess.direction != gesture.direction && !(view.gameLevel.maze[currentCellY,currentCellX].hasWall(gesture.direction) || view.gameLevel.maze[currentCellY + gesture.direction.row, currentCellX + gesture.direction.col].type == CellType.DOOR)){
@@ -97,7 +97,8 @@ class Controller(private val view: MainActivity, private val model: Model) : IGa
         }
     }
 
-    fun onGameEnd(gesture: GestureDetector){
+    //Properly updates the game variables when the player has won or lost the game
+    private fun onGameEnd(gesture: GestureDetector){
         if (model.gameOver){
             startLevel(GameLevel(view.map.level1, model.princess, model.monsters))
             model.level = 1
